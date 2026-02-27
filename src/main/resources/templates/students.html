@@ -9,20 +9,71 @@
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background-color: #f2f2f2; }
-    
+
     /* Thêm dòng này */
-    .text-danger { 
+    .text-danger {
         color: red;
         font-weight: bold;
+    }
+
+    .message {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+    }
+
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        margin: 2px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
     }
 </style>
 </head>
 <body>
 <h1>Danh Sach Sinh Vien (SSR)</h1>
+
+<!-- Display flash messages -->
+<div th:if="${message}" class="message success" th:text="${message}"></div>
+<div th:if="${error}" class="message error" th:text="${error}"></div>
+
+<!-- Search form -->
 <form action="/students" method="GET">
-    <input type="text" name="keyword" placeholder="Nhap ten..." />
-    <button type="submit">Tim</button>
+    <input type="text" name="keyword" placeholder="Nhap ten..." th:value="${param.keyword}" />
+    <button type="submit" class="btn btn-primary">Tim</button>
+    <a href="/students/add" class="btn btn-primary">Thêm Mới</a>
 </form>
+
 <table>
 <thead>
 <tr>
@@ -30,6 +81,7 @@
 <th>Ho va Ten</th>
 <th>Email</th>
 <th>Tuoi</th>
+<th>Thao tác</th>
 </tr>
 </thead>
 <tbody>
@@ -40,6 +92,13 @@
 <td th:text="${student.name}">Ten Mau</td>
 <td th:text="${student.email}">Email Mau</td>
 <td th:text="${student.age}">0</td>
+<td>
+    <a th:href="@{/students/{id}(id=${student.id})}" class="btn btn-secondary">Xem Chi Tiết</a>
+    <a th:href="@{/students/{id}/edit(id=${student.id})}" class="btn btn-primary">Chỉnh Sửa</a>
+    <form th:action="@{/students/{id}/delete(id=${student.id})}" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xóa sinh viên này?')">
+        <button type="submit" class="btn btn-danger">Xóa</button>
+    </form>
+</td>
 </tr>
 </tbody>
 </table>
