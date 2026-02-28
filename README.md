@@ -1,107 +1,205 @@
 # Student Management System
 
-This is a Spring Boot 4.0.3 web application for managing student information, developed as a demonstration project for the CNPMNC course at HCMUT - CSE.
+## 👥 Danh sách nhóm
 
-The system is a simple read-only application that displays student data stored in a PostgreSQL database.
+| MSSV   | Họ và Tên        |
+|--------|------------------|
+| 2312275 | Phan Thành Nghĩa |
 
---------------------------------------------------
+---
 
-ARCHITECTURE OVERVIEW
+## 🌐 Public URL (Deploy trên Render)
 
-The application follows a standard Spring Boot MVC architecture using JPA (Hibernate) for data persistence.
+👉 https://student-management-system1-x22d.onrender.com/students
 
-Frontend: Thymeleaf (Server-side HTML rendering)
-Backend: Spring Boot (REST + MVC Controllers)
-Database: PostgreSQL
-ORM: Hibernate (JPA)
-Build Tool: Maven
+---
 
---------------------------------------------------
+## 🚀 Hướng dẫn chạy dự án (Local)
 
-KEY COMPONENTS
+### Bước 1: Clone project
 
-1. Entity Layer - Student.java
+```bash
+git clone https://github.com/your-username/student-management-system.git
+cd student-management-system
+```
 
-Represents the student model in the system.
+### Bước 2: Chạy bằng Docker
 
-Fields:
-- id (String - manual primary key)
-- name
-- email
-- age
+```bash
+docker desktop start
+docker build -t student-management .
+docker run -p 8080:8080 student-management
+```
 
-Mapped to the "students" table in PostgreSQL.
+### Bước 3: Truy cập vào ứng dụng
 
---------------------------------------------------
+http://localhost:8080
 
-2. Repository Layer - StudentRepository.java
+---
 
-Handles database interaction.
+## 📚 Câu trả lời bài tập
 
-Extends:
-JpaRepository<Student, String>
+### Lab 1:
 
-Custom method:
-findByNameContainingIgnoreCase(String keyword)
+- Câu 1:
 
-Used for case-insensitive name search.
+```sql
+INSERT INTO students (id, name, email, age)
+VALUES
+(1, 'Nguyen Van A', 'vana@example.com', 20),
+(2, 'Tran Thi B', 'thib@example.com', 21),
+(3, 'Le Van C', 'vanc@example.com', 22),
+(4, 'Pham Thi D', 'thid@example.com', 19),
+(5, 'Hoang Van E', 'vane@example.com', 23),
+(6, 'Vu Thi F', 'thif@example.com', 20),
+(7, 'Dang Van G', 'vang@example.com', 21),
+(8, 'Bui Thi H', 'thih@example.com', 22),
+(9, 'Do Van I', 'vani@example.com', 24),
+(10, 'Ngo Thi K', 'thik@example.com', 18);
+```
 
---------------------------------------------------
+- Câu 2:
 
-3. Service Layer - StudentService.java
+Nếu insert sinh viên có id trùng:
 
-Contains business logic.
+```sql
+INSERT INTO students (id, name, email, age)
+VALUES (1, 'Test Student', 'test@example.com', 20);
+```
 
-Main methods:
-- getAll()
-- getById(String id)
-- searchByName(String keyword)
+Database báo lỗi:
 
---------------------------------------------------
+```terminal
+UNIQUE constraint failed
+```
 
-4. Controller Layer
+Cột id là Primary Key nên phải duy nhất.
+Database chặn thao tác này để đảm bảo tính toàn vẹn dữ liệu.
 
-StudentWebController (@Controller)
-Handles web requests.
+- Câu 3:
 
-Endpoint:
-GET /students
-Displays student list with optional name search.
+Nếu insert sinh viên nhưng để name = NULL:
 
-Uses Thymeleaf template:
-students.html
+```sql
+INSERT INTO students (id, email, age)
+VALUES (21, 'noname@example.com', 20);
+```
 
-StudentController (@RestController)
-Provides REST API.
+Database có thể không báo lỗi nếu không có ràng buộc NOT NULL. Ảnh hưởng trong Java:
 
-Endpoints:
-GET /api/students
-GET /api/students/{id}
+```java
+student.getName().length();
+```
 
---------------------------------------------------
+➡️ Nếu name = NULL → gây:
 
-5. Frontend - students.html
+```terminal
+NullPointerException
+```
 
-- Displays student list in table format
-- Includes search form
-- Students under 18 are highlighted in red
-- Uses simple inline CSS styling
+➡️ Nên đặt:
 
---------------------------------------------------
+```sql
+name TEXT NOT NULL
+```
 
-DATABASE
+➡️ Hoặc trong Java:
 
-Database: PostgreSQL
-Table: students
-Primary Key: id (String - manually assigned)
+```java
+@NotNull
+private String name;
+```
 
---------------------------------------------------
+- Câu 4:
 
-TECH STACK
+Nếu mỗi lần restart ứng dụng mà dữ liệu bị mất, nguyên nhân thường là do:
 
-- Spring Boot 4
-- Spring MVC
-- Spring Data JPA
-- PostgreSQL
-- Thymeleaf
-- Maven
+```properties
+spring.jpa.hibernate.ddl-auto=create
+```
+
+Hibernate sẽ xoá bảng cũ và tạo lại khi khởi động.
+
+➡️Cách khắc phục:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+Chế độ này sẽ: Tạo bảng nếu chưa tồn tại, không xoá dữ liệu cũ
+
+### Lab 3:
+
+- 7.1 Chức năng Tìm Kiếm:
+
+🔹Form tìm kiếm
+
+```html
+<form action="/students" method="GET">
+    <input type="text" name="keyword" placeholder="Nhập tên..." />
+    <button type="submit">Tìm</button>
+</form>
+```
+🔹 Controller
+
+Controller được cập nhật để nhận tham số keyword:
+
+```java
+@GetMapping
+public String getAllStudents(@RequestParam(required = false) String keyword, Model model) {
+    List<Student> students;
+
+    if (keyword != null && !keyword.isEmpty()) {
+        students = service.searchByName(keyword);
+    } else {
+        students = service.getAll();
+    }
+
+    model.addAttribute("dsSinhVien", students);
+    return "students";
+}
+```
+
+🔹 Service
+
+Thêm phương thức tìm kiếm:
+
+```java
+public List<Student> searchByName(String keyword) {
+    return repository.findByNameContainingIgnoreCase(keyword);
+}
+```
+🔹 Repository
+
+Spring Data JPA hỗ trợ truy vấn động:
+
+```java
+List<Student> findByNameContainingIgnoreCase(String keyword);
+```
+
+- 7.2 Hiển Thị Có Điều Kiện:
+
+Hệ thống được cải tiến để làm nổi bật các sinh viên chưa đủ 18 tuổi.
+
+Sử dụng Thymeleaf:
+
+```html
+<tr th:each="student : ${dsSinhVien}"
+    th:classappend="${student.age < 18} ? 'text-danger' : ''">
+    <td th:text="${student.id}"></td>
+    <td th:text="${student.name}"></td>
+    <td th:text="${student.email}"></td>
+    <td th:text="${student.age}"></td>
+</tr>
+```
+
+## 🖼️ Screenshot Lab 4
+
+### Trang Danh Sách (List View)
+![Student List](screenshots/students.png)
+
+### Trang Chi Tiết (Detail View)
+![Detail View](screenshots/student-detail.png)
+
+### Chức Năng Thêm & Sửa
+![Add & Edit](screenshots/add-edit.png)
