@@ -10,7 +10,7 @@
 
 ## 🌐 Public URL (Deploy trên Render)
 
-👉 https://student-management-system1-x22d.onrender.com/students
+👉 [https://student-management-system1-x22d.onrender.com/students](https://student-management-api-r7fc.onrender.com/students)
 
 ---
 
@@ -19,7 +19,7 @@
 ### Bước 1: Clone project
 
 ```bash
-git clone https://github.com/your-username/student-management-system.git
+git clone [https://github.com/your-username/student-management-system.git](https://github.com/PlayMaker1508/student-management-system.git)
 cd student-management-system
 ```
 
@@ -202,4 +202,5 @@ Sử dụng Thymeleaf:
 ![Detail View](screenshots/student-detail.png)
 
 ### Chức Năng Thêm & Sửa
+
 ![Add & Edit](screenshots/add-edit.png)
